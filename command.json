@@ -1,0 +1,110 @@
+// SQS policy
+
+{
+    "Version": "2012-10-17",
+    "Id": "__default_policy_ID",
+    "Statement": [
+      {
+        "Sid": "__owner_statement",
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": "arn:aws:iam::307952838332:root"
+        },
+        "Action": "SQS:*",
+        "Resource": "arn:aws:sqs:ap-south-1:307952838332:video-transcode-queue"
+      },
+      {
+          "Sid": "allowS3BucketToSendMessage",
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "s3.amazonaws.com"
+          },
+          "Action": "SQS:SendMessage",
+          "Resource": "arn:aws:sqs:ap-south-1:307952838332:video-transcode-queue",
+          "Condition": {
+            "ArnLike": {
+              "aws:SourceArn": "arn:aws:s3:::klipify-debjyoti-row"
+            }
+          }
+        }
+    ]
+  }
+
+----
+
+// s3 raw s3 policy 
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowWriteOnlyAccess",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::307952838332:user/Klipify-Studio"
+            },
+            "Action": "s3:PutObject",
+            "Resource": "arn:aws:s3:::klipify-debjyoti-row/*"
+        }
+    ]
+}
+
+---
+
+// s3 Production s3 policy
+{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Sid": "AllowReadWriteAccess",
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": "arn:aws:iam::307952838332:user/Klipify-Studio"
+        },
+        "Action": [
+          "s3:PutObject",
+          "s3:GetObject"
+        ],
+        "Resource": "arn:aws:s3:::klipify-debjyoti-prod/*"
+      },
+      {
+        "Sid": "PublicReadAccess",
+        "Effect": "Allow",
+        "Principal": "*",
+        "Action": "s3:GetObject",
+        "Resource": "arn:aws:s3:::klipify-debjyoti-prod/*"
+      }
+    ]
+  }
+ 
+
+--- 
+
+// s3 cors policy
+
+[
+    {
+        "AllowedOrigins": [
+            "*" // Pass a specific URL only; allowing everything is not a good practice.
+        ],
+        "AllowedMethods": [
+            "GET",
+            "PUT",
+            "POST",
+            "HEAD"
+        ],
+        "AllowedHeaders": [
+            "*"
+        ],
+        "ExposeHeaders": [
+            "ETag"
+        ],
+        "MaxAgeSeconds": 3000
+    }
+]
+
+
+
+
+
+

@@ -7,7 +7,7 @@ The platform consists of three main microservices working together to provide a 
 
 ## Application View
 ![](public/home.png)
-
+### Demo Vedio : https://www.youtube.com/watch?v=HVkANxh26vg
 ### 1. Frontend Application (Next.js)
 - **Framework**: Next.js 15 with React 19 and TypeScript
 - **UI**: Modern responsive design with Tailwind CSS

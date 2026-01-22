@@ -81,7 +81,7 @@ export function VideoPreview({ video, onBack, videos, onSelectVideo }: VideoPrev
             // Use direct HLS stream for 1080p quality
             const baseUrl = `https://klipify-debjyoti-prod.s3.ap-south-1.amazonaws.com`;
             const videoUrl = `${baseUrl}/hls-1080p-${video.name}/index.m3u8`;
-            
+
             console.log('Using direct HLS stream:', videoUrl);
 
             if (Hls.isSupported()) {
@@ -90,11 +90,11 @@ export function VideoPreview({ video, onBack, videos, onSelectVideo }: VideoPrev
                     debug: false,
                     enableWorker: false,
                 });
-                
+
                 console.log('Loading HLS source:', videoUrl);
                 hlsRef.current.loadSource(videoUrl);
                 hlsRef.current.attachMedia(videoElement);
-                
+
                 hlsRef.current.on(Hls.Events.MANIFEST_PARSED, () => {
                     console.log('HLS manifest parsed successfully');
                 });
@@ -105,7 +105,7 @@ export function VideoPreview({ video, onBack, videos, onSelectVideo }: VideoPrev
                         console.error('Fatal HLS error, cannot recover');
                     }
                 });
-                        
+
             } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
                 console.log('Native HLS support detected (Safari)');
                 videoElement.src = videoUrl;
@@ -121,7 +121,7 @@ export function VideoPreview({ video, onBack, videos, onSelectVideo }: VideoPrev
         const handleFullscreenChange = () => {
             setIsFullscreen(!!document.fullscreenElement);
         };
-        
+
         document.addEventListener('fullscreenchange', handleFullscreenChange);
 
         // Initialize video
@@ -131,7 +131,7 @@ export function VideoPreview({ video, onBack, videos, onSelectVideo }: VideoPrev
             videoElement.removeEventListener('timeupdate', updateTime);
             videoElement.removeEventListener('loadedmetadata', updateDuration);
             document.removeEventListener('fullscreenchange', handleFullscreenChange);
-            
+
             // Cleanup HLS
             if (hlsRef.current) {
                 hlsRef.current.destroy();
@@ -158,7 +158,7 @@ export function VideoPreview({ video, onBack, videos, onSelectVideo }: VideoPrev
 
     const toggleFullscreen = async () => {
         if (!containerRef.current) return;
-        
+
         try {
             if (document.fullscreenElement) {
                 await document.exitFullscreen();
@@ -187,18 +187,18 @@ export function VideoPreview({ video, onBack, videos, onSelectVideo }: VideoPrev
     const handleQualityChange = (quality: string) => {
         console.log('🎯 Quality change requested:', quality);
         setSelectedQuality(quality);
-        
+
         if (hlsRef.current && videoRef.current) {
             const baseUrl = `https://klipify-debjyoti-prod.s3.ap-south-1.amazonaws.com`;
             const newVideoUrl = `${baseUrl}/hls-${quality}-${video.name}/index.m3u8`;
-            
+
             console.log('🔄 Switching to quality stream:', newVideoUrl);
-            
+
             const currentTime = videoRef.current.currentTime;
             const wasPlaying = !videoRef.current.paused;
-            
+
             hlsRef.current.loadSource(newVideoUrl);
-            
+
             hlsRef.current.once(Hls.Events.MANIFEST_PARSED, () => {
                 if (videoRef.current) {
                     videoRef.current.currentTime = currentTime;
@@ -244,7 +244,7 @@ export function VideoPreview({ video, onBack, videos, onSelectVideo }: VideoPrev
                 <div className="xl:col-span-4 space-y-6">
                     {/* Video Container */}
                     <div className="bg-black/40 backdrop-blur-xl rounded-3xl border border-white/10 p-4 sm:p-6">
-                        <div 
+                        <div
                             ref={containerRef}
                             className={`relative bg-black rounded-2xl overflow-hidden shadow-2xl ${isFullscreen ? 'bg-black' : ''}`}
                         >
@@ -275,7 +275,7 @@ export function VideoPreview({ video, onBack, videos, onSelectVideo }: VideoPrev
                                             </div>
                                         </button>
                                     </div>
-                                    
+
                                     {/* Video info */}
                                     <div className="text-center text-white max-w-md">
                                         <h3 className="text-lg sm:text-xl font-semibold mb-3 truncate">{video.name}</h3>
@@ -319,12 +319,12 @@ export function VideoPreview({ video, onBack, videos, onSelectVideo }: VideoPrev
                                 <div className="relative group">
                                     <div className="w-full h-1 bg-slate-600/50 rounded-full overflow-hidden">
                                         <div className="absolute top-0 left-0 h-full bg-slate-500/60 rounded-full" style={{ width: '100%' }}></div>
-                                        <div 
+                                        <div
                                             className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-150"
                                             style={{ width: `${(currentTime / (duration || 1)) * 100}%` }}
                                         ></div>
                                     </div>
-                                    
+
                                     <input
                                         type="range"
                                         min="0"
@@ -334,13 +334,13 @@ export function VideoPreview({ video, onBack, videos, onSelectVideo }: VideoPrev
                                         className="absolute top-0 left-0 w-full h-1 opacity-0 cursor-pointer"
                                         style={{ margin: 0 }}
                                     />
-                                    
-                                    <div 
+
+                                    <div
                                         className="absolute top-1/2 transform -translate-y-1/2 w-3 h-3 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none shadow-lg"
                                         style={{ left: `calc(${(currentTime / (duration || 1)) * 100}% - 6px)` }}
                                     ></div>
                                 </div>
-                                
+
                                 <div className="flex justify-between text-sm text-slate-300">
                                     <span className="font-medium">{formatTime(currentTime)}</span>
                                     <span className="font-medium">{formatTime(duration)}</span>
@@ -402,7 +402,7 @@ export function VideoPreview({ video, onBack, videos, onSelectVideo }: VideoPrev
                                         />
                                     </div>
 
-                                    <button 
+                                    <button
                                         onClick={toggleFullscreen}
                                         className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
                                         title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
@@ -434,8 +434,8 @@ export function VideoPreview({ video, onBack, videos, onSelectVideo }: VideoPrev
                                             key={option.value}
                                             onClick={() => handleQualityChange(option.value)}
                                             className={`w-full p-3 rounded-xl text-left transition-all duration-200 border ${selectedQuality === option.value
-                                                    ? 'border-blue-400 bg-blue-500/20 text-white'
-                                                    : 'border-white/10 bg-white/5 text-slate-300 hover:border-blue-400/50 hover:bg-blue-500/10'
+                                                ? 'border-blue-400 bg-blue-500/20 text-white'
+                                                : 'border-white/10 bg-white/5 text-slate-300 hover:border-blue-400/50 hover:bg-blue-500/10'
                                                 }`}
                                         >
                                             <div className="font-medium">{option.label}</div>
@@ -457,8 +457,8 @@ export function VideoPreview({ video, onBack, videos, onSelectVideo }: VideoPrev
                                             key={speed}
                                             onClick={() => handleSpeedChange(speed)}
                                             className={`p-3 rounded-xl font-medium transition-all duration-200 ${selectedSpeed === speed
-                                                    ? 'bg-purple-600 text-white shadow-lg'
-                                                    : 'bg-white/5 text-slate-300 hover:bg-purple-500/20 hover:text-white border border-white/10'
+                                                ? 'bg-purple-600 text-white shadow-lg'
+                                                : 'bg-white/5 text-slate-300 hover:bg-purple-500/20 hover:text-white border border-white/10'
                                                 }`}
                                         >
                                             {speed}x

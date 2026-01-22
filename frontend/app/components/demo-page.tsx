@@ -14,27 +14,25 @@ export function DemoPage({ onBack }: DemoPageProps) {
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [volume, setVolume] = useState(1);
-    const [isMuted, setIsMuted] = useState(false);
+    const [isMuted, setIsMuted] = useState(true);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [showControls, setShowControls] = useState(true);
 
-    const demoVideoUrl = "/Klipify-demo.mp4";
+    const demoVideoUrl = "https://res.cloudinary.com/dttgxjfpf/video/upload/v1769089671/Klipify-demo_hwfse9.mp4";
 
     useEffect(() => {
         const videoElement = videoRef.current;
         if (!videoElement) return;
 
         const updateTime = () => setCurrentTime(videoElement.currentTime);
-        const updateDuration = () => setDuration(videoElement.duration);
 
         videoElement.addEventListener('timeupdate', updateTime);
-        videoElement.addEventListener('loadedmetadata', updateDuration);
 
         // Fullscreen change listener
         const handleFullscreenChange = () => {
             setIsFullscreen(!!document.fullscreenElement);
         };
-        
+
         document.addEventListener('fullscreenchange', handleFullscreenChange);
 
         // Auto-hide controls after 3 seconds of inactivity
@@ -52,7 +50,6 @@ export function DemoPage({ onBack }: DemoPageProps) {
 
         return () => {
             videoElement.removeEventListener('timeupdate', updateTime);
-            videoElement.removeEventListener('loadedmetadata', updateDuration);
             videoElement.removeEventListener('mousemove', resetHideControlsTimeout);
             videoElement.removeEventListener('click', resetHideControlsTimeout);
             document.removeEventListener('fullscreenchange', handleFullscreenChange);
@@ -60,21 +57,27 @@ export function DemoPage({ onBack }: DemoPageProps) {
         };
     }, [isPlaying]);
 
-    const togglePlay = () => {
-        if (videoRef.current) {
-            if (isPlaying) {
-                videoRef.current.pause();
-                setIsPlaying(false);
-            } else {
-                videoRef.current.play();
+    const togglePlay = async () => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        try {
+            if (video.paused) {
+                await video.play(); // Safari-safe
                 setIsPlaying(true);
+            } else {
+                video.pause();
+                setIsPlaying(false);
             }
+        } catch (err) {
+            console.error("Video play blocked:", err);
         }
     };
 
+
     const toggleFullscreen = async () => {
         if (!containerRef.current) return;
-        
+
         try {
             if (document.fullscreenElement) {
                 await document.exitFullscreen();
@@ -112,7 +115,7 @@ export function DemoPage({ onBack }: DemoPageProps) {
                         <ArrowLeft className="w-5 h-5 mr-2" />
                         <span className="font-medium">Back to Home</span>
                     </button>
-                    
+
                     <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                             <Play className="w-4 h-4 text-white" />
@@ -121,7 +124,7 @@ export function DemoPage({ onBack }: DemoPageProps) {
                             Klipify Demo
                         </h1>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2 bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-medium">
                         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                         <span>Live Demo</span>
@@ -134,24 +137,31 @@ export function DemoPage({ onBack }: DemoPageProps) {
                 <div className="w-full max-w-6xl">
                     <div className="relative group">
                         <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
-                        
+
                         <div className="relative bg-black/40 backdrop-blur-xl rounded-3xl border border-white/10 p-6 shadow-2xl">
-                            <div 
+                            <div
                                 ref={containerRef}
                                 className={`relative bg-black rounded-2xl overflow-hidden shadow-2xl ${isFullscreen ? 'bg-black' : ''}`}
                                 onMouseEnter={() => setShowControls(true)}
                                 onMouseLeave={() => isPlaying && setShowControls(false)}
                             >
                                 <video
+                                    onLoadedMetadata={() => {
+                                        if (videoRef.current) {
+                                            setDuration(videoRef.current.duration);
+                                        }
+                                    }}
+
                                     ref={videoRef}
                                     src={demoVideoUrl}
+                                    preload="metadata"
+                                    playsInline
+                                    muted={isMuted}
                                     className="w-full aspect-video"
                                     onPlay={() => setIsPlaying(true)}
                                     onPause={() => setIsPlaying(false)}
-                                    onClick={togglePlay}
-                                    crossOrigin="anonymous"
-                                    controls={false}
                                 />
+
 
                                 {/* Video Controls Overlay */}
                                 <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
@@ -180,12 +190,12 @@ export function DemoPage({ onBack }: DemoPageProps) {
                                     <div className="absolute bottom-0 left-0 right-0 p-6">
                                         <div className="relative group mb-4">
                                             <div className="w-full h-1 bg-slate-600/50 rounded-full overflow-hidden">
-                                                <div 
+                                                <div
                                                     className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-150"
                                                     style={{ width: `${(currentTime / (duration || 1)) * 100}%` }}
                                                 ></div>
                                             </div>
-                                            
+
                                             <input
                                                 type="range"
                                                 min="0"
@@ -194,8 +204,8 @@ export function DemoPage({ onBack }: DemoPageProps) {
                                                 onChange={handleSeek}
                                                 className="absolute top-0 left-0 w-full h-1 opacity-0 cursor-pointer"
                                             />
-                                            
-                                            <div 
+
+                                            <div
                                                 className="absolute top-1/2 transform -translate-y-1/2 w-3 h-3 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none shadow-lg"
                                                 style={{ left: `calc(${(currentTime / (duration || 1)) * 100}% - 6px)` }}
                                             ></div>
@@ -225,7 +235,6 @@ export function DemoPage({ onBack }: DemoPageProps) {
                                             <div className="flex items-center space-x-4">
                                                 <div className="flex items-center space-x-2">
                                                     <button
-                                                        onClick={() => setIsMuted(!isMuted)}
                                                         className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
                                                     >
                                                         {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
@@ -248,13 +257,20 @@ export function DemoPage({ onBack }: DemoPageProps) {
                                                     />
                                                 </div>
 
-                                                <button 
-                                                    onClick={toggleFullscreen}
+                                                <button
+                                                    onClick={() => {
+                                                        const video = videoRef.current;
+                                                        if (!video) return;
+
+                                                        const nextMuted = !isMuted;
+                                                        video.muted = nextMuted;
+                                                        setIsMuted(nextMuted);
+                                                    }}
                                                     className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
-                                                    title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
                                                 >
-                                                    <Maximize className="w-4 h-4" />
+                                                    {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                                                 </button>
+
                                             </div>
                                         </div>
                                     </div>
